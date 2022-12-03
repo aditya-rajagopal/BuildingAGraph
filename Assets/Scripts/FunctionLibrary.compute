@@ -1,0 +1,190 @@
+// The order in which these kernels are defined determine how they are indexed
+// We will order them in such a way that functionB + functionA * 5 will give us the kernelID
+
+#pragma kernel WaveKernel
+#pragma kernel WaveToMultiWaveKernel
+#pragma kernel WaveToRippleKernel
+#pragma kernel WaveToSphereKernel
+#pragma kernel WaveToTorusKernel
+
+#pragma kernel MultiWaveToWaveKernel
+#pragma kernel MultiWaveKernel
+#pragma kernel MultiWaveToRippleKernel
+#pragma kernel MultiWaveToSphereKernel
+#pragma kernel MultiWaveToTorusKernel
+
+#pragma kernel RippleToWaveKernel
+#pragma kernel RippleToMultiWaveKernel
+#pragma kernel RippleKernel
+#pragma kernel RippleToSphereKernel
+#pragma kernel RippleToTorusKernel
+
+#pragma kernel SphereToWaveKernel
+#pragma kernel SphereToMultiWaveKernel
+#pragma kernel SphereToRippleKernel
+#pragma kernel SphereKernel
+#pragma kernel SphereToTorusKernel
+
+#pragma kernel TorusToWaveKernel
+#pragma kernel TorusToMultiWaveKernel
+#pragma kernel TorusToRippleKernel
+#pragma kernel TorusToSphereKernel
+#pragma kernel TorusKernel
+#define PI 3.14159265358979323846
+
+// We can find teh u, v coordinate a particular thread is working with the thread ID and a step value
+float _Step;
+
+// to make our functions animate we need to know the time
+float _Time;
+
+// To enable transitions between functions we need a progress variable
+float _TransitionProgress;
+
+// To store the positions we need a position buffer. Here we specifically need a float3 because we are passing a 
+// 3 dimentional position
+RWStructuredBuffer<float3> _Positions;
+
+// We also need the resolution of our graph
+uint _Resolution;
+
+float2 GetUV (uint3 id){
+    // ??
+    return (id.xy + 0.5) * _Step - 1.0;
+}
+
+void SetPosition (uint3 id, float3 position)
+{
+    // Here we take the thread ID and store teh position into it
+    // However if our actual resolution is not the same as the number of threads in each direction (it will be number of groups * 8)
+    // then we will end up with out of bound points. Which will cause issues with values to fall outside the buffer or clash with valid points.
+    if (id.x < _Resolution && id.y < _Resolution) {
+        _Positions[id.x + id.y * _Resolution] = position;
+    }
+}
+
+float3 Wave (float u, float v, float t)
+{
+    float3 p;
+    p.x = u;
+    p.y = sin(PI * (u + v + t));
+    p.z = v;
+    return p;
+}
+
+float3 MultiWave (float u, float v, float t) {
+	float3 p;
+	p.x = u;
+	p.y = sin(PI * (u + 0.5 * t));
+	p.y += 0.5 * sin(2.0 * PI * (v + t));
+	p.y += sin(PI * (u + v + 0.25 * t));
+	p.y *= 1.0 / 2.5;
+	p.z = v;
+	return p;
+}
+
+
+float3 Ripple (float u, float v, float t) {
+	float d = sqrt(u * u + v * v);
+	float3 p;
+	p.x = u;
+	p.y = sin(PI * (4.0 * d - t));
+	p.y /= 1.0 + 10.0 * d;
+	p.z = v;
+	return p;
+}
+
+
+float3 Sphere (float u, float v, float t) {
+	float r = 0.9 + 0.1 * sin(PI * (6.0 * u + 4.0 * v + t));
+	float s = r * cos(0.5 * PI * v);
+	float3 p;
+	p.x = s * sin(PI * u);
+	p.y = r * sin(0.5 * PI * v);
+	p.z = s * cos(PI * u);
+	return p;
+}
+
+
+float3 Torus (float u, float v, float t) {
+	float r1 = 0.7 + 0.1 * sin(PI * (6.0 * u + 0.5 * t));
+	float r2 = 0.15 + 0.05 * sin(PI * (8.0 * u + 4.0 * v + 2.0 * t));
+	float s = r2 * cos(PI * v) + r1;
+	float3 p;
+	p.x = s * sin(PI * u);
+	p.y = r2 * sin(PI * v);
+	p.z = s * cos(PI * u);
+	return p;
+}
+
+
+// When a GPU runs an instruction from a compute shader it partitions the work into groups
+// and each group runs independantly and in parallel. Each group will run a number of threads that run
+// the same function but with different inputs.
+
+// GPU compute units always run a certain number of threads in lockstep called warps or wavefronts. If the number of threads
+// in a group is less or more than this number you will end up wasting resources. AMD uses 64 threads per group and Nvidia 32.
+// It is hence safe to use multiples of  64. 
+
+// The X, Y and Z values indicate the size of the thread group in a particular direction and the total of X*Y*Z 
+// gives the number of threads in the group. The ability to specify the size of the thread group across three 
+// dimensions allows individual threads to be accessed in a manner that logically 2D and 3D data structures.
+// In this tutorial example they use [8, 8, 1] due to us trying to generate the outpus of a square
+// 2D plane.
+
+// create a macro function that takes in the function name
+#define KERNEL_FUNCTION(function) \
+[numthreads(8, 8, 1)] \
+void function##Kernel (uint3 id: SV_DispatchThreadID) \
+{ \
+    float2 uv = GetUV(id); \
+    SetPosition(id, function(uv.x, uv.y, _Time)); \
+}
+
+
+// We have to define a kernel for each pair of transformations
+#define KERNEL_MORPH_FUNCTION(functionA, functionB) \
+[numthreads(8, 8, 1)] \
+void functionA##To##functionB##Kernel (uint3 id: SV_DispatchThreadID) \
+{ \
+    float2 uv = GetUV(id); \
+    float3 position = lerp( \
+        functionA(uv.x, uv.y, _Time), functionB(uv.x, uv.y, _Time), \
+        _TransitionProgress \
+    ); \
+    SetPosition(id, position); \
+}
+
+// now we can define different kernels
+KERNEL_FUNCTION(Wave)
+KERNEL_FUNCTION(MultiWave)
+KERNEL_FUNCTION(Ripple)
+KERNEL_FUNCTION(Sphere)
+KERNEL_FUNCTION(Torus)
+
+
+// Thats a lot of functions
+KERNEL_MORPH_FUNCTION(Wave, MultiWave);
+KERNEL_MORPH_FUNCTION(Wave, Ripple);
+KERNEL_MORPH_FUNCTION(Wave, Sphere);
+KERNEL_MORPH_FUNCTION(Wave, Torus);
+
+KERNEL_MORPH_FUNCTION(MultiWave, Wave);
+KERNEL_MORPH_FUNCTION(MultiWave, Ripple);
+KERNEL_MORPH_FUNCTION(MultiWave, Sphere);
+KERNEL_MORPH_FUNCTION(MultiWave, Torus);
+
+KERNEL_MORPH_FUNCTION(Ripple, Wave);
+KERNEL_MORPH_FUNCTION(Ripple, MultiWave);
+KERNEL_MORPH_FUNCTION(Ripple, Sphere);
+KERNEL_MORPH_FUNCTION(Ripple, Torus);
+
+KERNEL_MORPH_FUNCTION(Sphere, Wave);
+KERNEL_MORPH_FUNCTION(Sphere, MultiWave);
+KERNEL_MORPH_FUNCTION(Sphere, Ripple);
+KERNEL_MORPH_FUNCTION(Sphere, Torus);
+
+KERNEL_MORPH_FUNCTION(Torus, Wave);
+KERNEL_MORPH_FUNCTION(Torus, MultiWave);
+KERNEL_MORPH_FUNCTION(Torus, Ripple);
+KERNEL_MORPH_FUNCTION(Torus, Sphere);

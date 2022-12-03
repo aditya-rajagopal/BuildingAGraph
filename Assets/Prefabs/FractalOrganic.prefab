@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &97203068172743105
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 97203068172743107}
+  - component: {fileID: 97203068172743104}
+  m_Layer: 0
+  m_Name: FractalOrganic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &97203068172743107
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97203068172743105}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.000872, y: -7.737441, z: 13.302356}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &97203068172743104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97203068172743105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 908e98a492adea54da72e8e3f2d3b465, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  depth: 8
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  leafMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  material: {fileID: 2100000, guid: ea20275167f1b7844a0855f854837161, type: 2}
+  gradientA:
+    serializedVersion: 2
+    key0: {r: 0.03473187, g: 0.019607848, b: 0.05490196, a: 0.56078434}
+    key1: {r: 0.09153078, g: 0.043137256, b: 0.13725491, a: 0.58431375}
+    key2: {r: 0.1691732, g: 0.0481043, b: 0.21698111, a: 0}
+    key3: {r: 0.27310535, g: 0.05517978, b: 0.3773585, a: 0}
+    key4: {r: 0.27310535, g: 0.05517978, b: 0.3773585, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 3277
+    ctime1: 10216
+    ctime2: 50501
+    ctime3: 65535
+    ctime4: 65535
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2
+  gradientB:
+    serializedVersion: 2
+    key0: {r: 0.05490196, g: 0.019607848, b: 0.025035106, a: 0.36078432}
+    key1: {r: 0.13725491, g: 0.044077966, b: 0.043137256, a: 0.39215687}
+    key2: {r: 0.13725491, g: 0.044077966, b: 0.043137256, a: 0}
+    key3: {r: 0.21568628, g: 0.055063356, b: 0.047058817, a: 0}
+    key4: {r: 0.3764706, g: 0.077502646, b: 0.054901954, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 3277
+    ctime1: 11758
+    ctime2: 11951
+    ctime3: 40285
+    ctime4: 65535
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 5
+    m_NumAlphaKeys: 2
+  leafColorA: {r: 0.18114427, g: 0.5283019, b: 0.13705947, a: 0.5019608}
+  leafColorB: {r: 0.5532348, g: 0.6981132, b: 0.036222856, a: 0.8862745}
+  maxSagAngleA: 19
+  maxSagAngleB: 60.1
+  spinSpeedA: 30.7
+  spinSpeedB: 60
+  reverseSpinChance: 0.101
